@@ -1,0 +1,22 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+version = "0.0.1"
+name = "mini_assignment_autograder"
+authors = [
+  { name="Meaghan Fowlie", email="megodoonch@gmail.com" },
+]
+description = "Creates and marks small python assignments"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/megodoonch/mini-assignment-autograder"
+"Bug Tracker" = "https://github.com/megodoonch/mini-assignment-autograder/issues"
