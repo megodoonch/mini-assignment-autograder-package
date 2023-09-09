@@ -1,0 +1,10 @@
+{
+  "max_internal_grade": 10 // max score for the grader, traditionally 10 (for calculating)
+  "minimum_grade": 5,  // grade out of max_internal_grade won't fall below this
+  "hw_name_column": 6, // the column number in the Blackboard spreadsheet with the HW grade
+  "show_subtractions": true, // if True, prints the subtracted marks for each infraction
+  "full_points_if_runs": false, // if True, students lose points only for code that throws errors
+  "max_output_grade": 1, // e.g. report mark out of 1 since it's worth only 1%
+  "local_path_for_marks": "~"  // copy the marks here
+
+}

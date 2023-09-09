@@ -9,5 +9,5 @@
 # exclude Pycharm stuff
 .idea
 /examples/favourite_number/marking/
-/autograder/module_script/marking/
-/autograder/nth/marking/
+/mini_assignment_autograder/module_script/marking/
+/mini_assignment_autograder/nth/marking/

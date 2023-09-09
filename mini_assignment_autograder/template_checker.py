@@ -1,4 +1,4 @@
-from checker import *
+from mini_assignment_autograder.checker import *
 
 
 class HWChecker(Checker):

@@ -3,15 +3,12 @@ import importlib
 import os
 import re
 import shutil
-import subprocess
 import sys
 import zipfile
 from pathlib import Path
 
-from autograder.checker import student_module_path
-
-# update this for your computer: the more permanent place where you want the spreadsheet copied to
-local_path_for_marks = f"results/DTaM/2023/"  # "~/Documents/UU_teaching/student-data/introCL/introCL2023/minis/"
+import spreadsheet_updater
+from mini_assignment_autograder.checker import student_module_path
 
 
 def extract_id_and_module_from_file_name(file_name):
@@ -44,7 +41,8 @@ class SubmissionsChecker():
                             subfolder when you're done
 
     """
-    def __init__(self, project_path, spreadsheet_path=None, zip_path=None, extra_files=None):
+    def __init__(self, project_path, spreadsheet_path=None, hw_name_column=None, zip_path=None,
+                 extra_files=None, minimum_score=0, local_path_for_marks="~"):
         """
         Initialise a submission marker for an assignment
         @param project_path: local path to the specific assignment subdirectory, e.g. favourite_number
@@ -52,11 +50,14 @@ class SubmissionsChecker():
         @param zip_path: path to the raw assignments as downloaded from Blackboard (default None)
         @param extra_files: any extra files to copy into the working directory (default None)
         """
+        self.hw_name_column = hw_name_column
+        self.minimum_score = minimum_score
         project_parts = [s for s in project_path.split("/") if len(s) > 0]
         self.project = project_parts[-1]
         self.project_path = project_path
         self.csv = f"{self.project}.csv"
-        self.working_directory = f"data/processed/{self.project_path}"
+        self.submissions_directory_name = "submissions"
+        self.working_directory = f"{self.project_path}/{self.submissions_directory_name}"
         self.zip_path = zip_path
         self.spreadsheet_path = spreadsheet_path
         self.extra_files = extra_files
@@ -90,16 +91,15 @@ class SubmissionsChecker():
                 os.rename(f"{self.working_directory}/{file}",
                           f"{self.working_directory}/{student_module_path(module, current_id)}")
 
-        self.copy_in_checkers_and_extra_files()
+        self.copy_in_extra_files()
 
     def check_all_submissions(self):
         """
         Loops throught the submissions, builds a HWChecker for each, and runs check()
         Writes results to self.csv
         """
-
         # not sure if these are both needed
-        os.chdir(self.working_directory)
+        # os.chdir(self.working_directory)
         sys.path.append(self.working_directory)
 
         # initialise the CSV file of marks
@@ -108,14 +108,14 @@ class SubmissionsChecker():
             writer.writerow(
                 ["Username", "Mark", "Feedback"])
 
-        checker = importlib.import_module(f"data.processed.{self.project}.hw_checker")
+        checker = importlib.import_module(f"{self.project}.hw_checker")
         # mark the assignments
         print(os.getcwd())
         for student_id in os.listdir("."):
             if re.search(r'[a-zA-Z]', student_id): # Student folders are just their ID #s, so ignore things with letters
                 continue
             print(f"student {student_id}")
-            student_checker = checker.HWChecker(student_id)
+            student_checker = checker.HWChecker(student_id, self.submissions_directory_name)
             try:
                 grade, comments = student_checker.check()
                 with open(self.csv, 'a') as f:
@@ -128,33 +128,28 @@ class SubmissionsChecker():
                     writer.writerow([student_id, student_checker.min_output_grade, # if can't mark, they get min grade
                                      f"autograding threw error: {err}"])
 
-        # Not clear if this is needed either
-        os.chdir("../..")
-
     def update_spreadsheet(self):
         """
         Copy the data from self.csv into a copy of the Blackboard spreadsheet
         The BB spreadsheet needs to be a very specific format, so we copy everything over and add the marks and comments
         Copy both self.csv and the copy we made, called marks.csv, to the local marks path
         """
-        os.makedirs(self.local_marks_path, exist_ok=True)
-        print("updating spreadsheet", self.spreadsheet_path)
-        command = f"python bases/spreadsheet_updater.py {self.working_directory}/{self.csv} {self.spreadsheet_path}"
-        result = subprocess.run(command.split())
+        if self.spreadsheet_path and self.hw_name_column:
+            os.makedirs(self.local_marks_path, exist_ok=True)
+            print("updating spreadsheet", self.spreadsheet_path)
+            spreadsheet_updater.update_spreadsheet(self.minimum_score, self.hw_name_column, {self.working_directory}/{self.csv}, self.spreadsheet_path)
+            # command = f"python spreadsheet_updater.py {self.working_directory}/{self.csv} {self.spreadsheet_path}"
+            # result = subprocess.run(command.split())
 
-        if result.returncode == 0:
+            # if result.returncode == 0:
             print("copying marks to", self.local_marks_path, "/marks.csv")
-            shutil.copy(f"{self.working_directory}/{self.csv}", self.local_marks_path)
+            # shutil.copy(f"{self.working_directory}/{self.csv}", self.local_marks_path)
             shutil.copy("marks.csv", self.local_marks_path)
 
-    def copy_in_checkers_and_extra_files(self):
+    def copy_in_extra_files(self):
         """
-        If you're debugging, update the permanent copies of the checkers, and run this to copy them into
-            the working directory. Also used by self.set_up_working_directory
+        used by self.set_up_working_directory
         """
-        shutil.copy(f"autograder/{self.project_path}/hw_checker.py", self.working_directory)
-        shutil.copy("autograder/bases/checker.py", self.working_directory)
         if self.extra_files is not None:
             for path in self.extra_files:
                 shutil.copy(path, self.working_directory)
-                shutil.copy(path, "../src/")

@@ -17,7 +17,7 @@ For me, if student with id 0512784 hands in Mini-Assignment 0 by submitting a fi
 You'll also need to update local_marks_path
 """
 
-from autograder.all_submissions_checker import SubmissionsChecker
+from mini_assignment_autograder.all_submissions_checker import SubmissionsChecker
 import argparse
 
 # This is the parent directory where the output will be saved to. Update it for your system.
@@ -46,7 +46,7 @@ unzip = args.zip is not None
 if unzip:
     checker.set_up_working_directory()
 # copy in new copies of the checkers to be on the safe side
-checker.copy_in_checkers_and_extra_files()
+checker.copy_in_extra_files()
 checker.check_all_submissions()
 if args.spreadsheet is not None:
     checker.update_spreadsheet()

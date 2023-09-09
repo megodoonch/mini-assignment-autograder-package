@@ -40,21 +40,30 @@ class Checker(ABC):
     project: str
     modules: [str]
 
-    def __init__(self, sid):
+    def __init__(self,
+                 sid,
+                 submissions_folder_name="submissions",
+                 show_subtractions=True,
+                 full_points_if_runs=False,
+                 max_output_grade=1,
+                 max_internal_grade=10,
+                 min_internal_grade=5
+                 ):
         """
         :param sid: student id number
         """
         # self.csv = f"{self.project}.csv"
         self.sid = sid
         self.comments = ""
-        self.show_subtractions = False  # if True, prints the subtracted marks for each infraction
-        self.full_points_if_runs = False  # if True, students lose points only for code that throws errors
-        self.max_output_grade = 1  # report mark out of 1 since it's worth only 1%
-        self.max_internal_grade = 10  # max score for the grader, traditionally 10
-        self.min_internal_grade = self.max_internal_grade / 2   # this'll replace their mark if it goes below it
+        self.show_subtractions = show_subtractions  # if True, prints the subtracted marks for each infraction
+        self.full_points_if_runs = full_points_if_runs  # if True, students lose points only for code that throws errors
+        self.max_output_grade = max_output_grade  # report mark out of 1 since it's worth only 1%
+        self.max_internal_grade = max_internal_grade  # max score for the grader, traditionally 10
+        self.min_internal_grade = min_internal_grade # this'll replace their mark if it goes below it
         self.grade = self.max_internal_grade  # initialise to 100%
         self.min_output_grade = self.min_internal_grade * (self.max_output_grade / self.max_internal_grade)
         self.unusable = False
+        self.parent_folder_name = submissions_folder_name
 
     def module_name(self, n=0):
         """
@@ -76,7 +85,7 @@ class Checker(ABC):
         Returns:
             str: f"{self.id}/{self.modules[n]}.py"
         """
-        return f"{self.sid}/{self.modules[n]}.py"
+        return f"{self.parent_folder_name}/{self.sid}/{self.modules[n]}.py"
 
     def script_checker(self):
         """
@@ -86,7 +95,7 @@ class Checker(ABC):
         pass
 
     def module_import_path(self, n=0):
-        return f'{self.sid}.{self.module_name(n)}'
+        return f'{self.parent_folder_name}.{self.sid}.{self.module_name(n)}'
 
     def module_checker(self):
         """
