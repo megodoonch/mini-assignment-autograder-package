@@ -1,5 +1,5 @@
 from mini_assignment_autograder import checker
 from mini_assignment_autograder import all_submissions_checker
 from mini_assignment_autograder import importer
-# from mini_assignment_autograder import spreadsheet_updater
+from mini_assignment_autograder import spreadsheet_updater
 from mini_assignment_autograder import template_checker

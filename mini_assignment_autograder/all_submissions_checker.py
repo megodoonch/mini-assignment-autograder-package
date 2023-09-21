@@ -7,7 +7,7 @@ import sys
 import zipfile
 from pathlib import Path
 
-import spreadsheet_updater
+from mini_assignment_autograder import spreadsheet_updater
 from mini_assignment_autograder.checker import student_module_path
 
 
@@ -103,19 +103,20 @@ class SubmissionsChecker():
         sys.path.append(self.working_directory)
 
         # initialise the CSV file of marks
-        with open(self.csv, 'w') as f:
+        with open(f"{self.project}/{self.csv}", 'w') as f:
             writer = csv.writer(f, dialect='unix')
             writer.writerow(
                 ["Username", "Mark", "Feedback"])
 
         checker = importlib.import_module(f"{self.project}.hw_checker")
         # mark the assignments
-        print(os.getcwd())
-        for student_id in os.listdir("."):
+        os.chdir(self.project)
+        print("now in directory", os.getcwd())
+        for student_id in os.listdir(self.submissions_directory_name):
             if re.search(r'[a-zA-Z]', student_id): # Student folders are just their ID #s, so ignore things with letters
                 continue
             print(f"student {student_id}")
-            student_checker = checker.HWChecker(student_id, self.submissions_directory_name)
+            student_checker = checker.HWChecker(student_id)
             try:
                 grade, comments = student_checker.check()
                 with open(self.csv, 'a') as f:

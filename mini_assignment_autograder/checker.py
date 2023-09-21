@@ -139,10 +139,11 @@ class Checker(ABC):
         self.comments += f"{c}; "
 
     def lower_score(self, points, comment=None):
+        print_points = points * (self.max_output_grade / self.max_internal_grade)
         if comment is None:
             comment = ""
         if self.show_subtractions:
-            self.add_comment("(-{}) {}".format(points, comment))
+            self.add_comment("(-{}) {}".format(print_points, comment))
         else:
             self.add_comment(comment)
         self.grade -= points
