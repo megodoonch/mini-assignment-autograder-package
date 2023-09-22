@@ -1,3 +1,9 @@
+"""
+Checks all student submissions.
+If zip file is provided, extracts zipped submissions.
+If spreadsheet from Blackboard is provided, adds marks and comments to the spreadsheet so it can be uploaded
+"""
+
 import csv
 import importlib
 import os
@@ -26,7 +32,7 @@ def extract_id_and_module_from_file_name(file_name):
     return student_id_number, the_module
 
 
-class SubmissionsChecker():
+class SubmissionsChecker:
     """
     Checks all submissions for a given mini-assignment
     Attributes:
@@ -41,8 +47,8 @@ class SubmissionsChecker():
                             subfolder when you're done
 
     """
-    def __init__(self, project_path, spreadsheet_path=None, hw_name_column=None, zip_path=None,
-                 extra_files=None, minimum_score=0, local_path_for_marks="~"):
+    def __init__(self, project_path, spreadsheet_path=None, hw_name_column=6, zip_path=None,
+                 extra_files=None, minimum_score=0, local_path_for_marks="~/Documents"):
         """
         Initialise a submission marker for an assignment
         @param project_path: local path to the specific assignment subdirectory, e.g. favourite_number
@@ -50,7 +56,7 @@ class SubmissionsChecker():
         @param zip_path: path to the raw assignments as downloaded from Blackboard (default None)
         @param extra_files: any extra files to copy into the working directory (default None)
         """
-        self.hw_name_column = hw_name_column
+        self.hw_name_column = int(hw_name_column)
         self.minimum_score = minimum_score
         project_parts = [s for s in project_path.split("/") if len(s) > 0]
         self.project = project_parts[-1]
@@ -112,7 +118,8 @@ class SubmissionsChecker():
         # mark the assignments
         os.chdir(self.project)
         print("now in directory", os.getcwd())
-        for student_id in os.listdir(self.submissions_directory_name):
+        print("marking submissions in", self.submissions_directory_name)
+        for student_id in os.listdir(f"{self.submissions_directory_name}"):
             if re.search(r'[a-zA-Z]', student_id): # Student folders are just their ID #s, so ignore things with letters
                 continue
             print(f"student {student_id}")
@@ -138,7 +145,7 @@ class SubmissionsChecker():
         if self.spreadsheet_path and self.hw_name_column:
             os.makedirs(self.local_marks_path, exist_ok=True)
             print("updating spreadsheet", self.spreadsheet_path)
-            spreadsheet_updater.update_spreadsheet(self.minimum_score, self.hw_name_column, {self.working_directory}/{self.csv}, self.spreadsheet_path)
+            spreadsheet_updater.update_spreadsheet(self.minimum_score, self.hw_name_column, f"{self.csv}", self.spreadsheet_path)
             # command = f"python spreadsheet_updater.py {self.working_directory}/{self.csv} {self.spreadsheet_path}"
             # result = subprocess.run(command.split())
 

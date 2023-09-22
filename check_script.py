@@ -21,7 +21,7 @@ from mini_assignment_autograder.all_submissions_checker import SubmissionsChecke
 import argparse
 
 # This is the parent directory where the output will be saved to. Update it for your system.
-local_marks_path = "results/digital_tools/2023"
+local_marks_path = "results/digital_tools/2023/"
 
 
 # get the command line arguments
@@ -45,9 +45,10 @@ checker = SubmissionsChecker(args.project, args.spreadsheet, args.zip, args.extr
 unzip = args.zip is not None
 if unzip:
     checker.set_up_working_directory()
-# copy in new copies of the checkers to be on the safe side
 checker.copy_in_extra_files()
+
 checker.check_all_submissions()
+
 if args.spreadsheet is not None:
     checker.update_spreadsheet()
 

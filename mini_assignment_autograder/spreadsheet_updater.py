@@ -1,14 +1,20 @@
-import csv
+"""
+provides function for updating Blackboard spreadsheet of marks using the local spreadsheet created by autograder
+writes to marks.csv
+"""
 
-# minimum_score = 0.5
-# hw_name_column = 6  # which column the HW name is in
-# # on the gradebook-downloaded spreadsheet
-#
-# mark_file = sys.argv[1]  # path to output of mark.sh
-# blackboard_filepath = sys.argv[2]  # path to original CSV from Blackboard
+import csv
 
 
 def update_spreadsheet(minimum_score, hw_name_column, mark_file, blackboard_filepath):
+    """
+    Reads in the marks from the file created by autograder.
+        - only has three columns.
+    Reads in the Blackboard spreadsheet.
+        - has lots of columns, and they all need to be there
+    Inserts the grade and comments for each student
+    writes to marks.csv
+    """
     # read in the file of grades from the autograder
     # store in dict of username : (mark, comments)
     with open(mark_file, 'r') as f:
@@ -43,13 +49,12 @@ def update_spreadsheet(minimum_score, hw_name_column, mark_file, blackboard_file
                     row["Feedback to Learner"] = "Misnamed file"
                 writer.writerow(row)
 
-        id_length = 7
+        # copy the temp file to the final marks file, re-writing the first cell to remove the BOM marker
         with open("temp.csv", "r") as input_file:
             with open("marks.csv", "w") as output_file:
                 for i, line in enumerate(input_file.readlines()):
                     if i == 0:
                         parts = line.split(",")
-                        print(parts[0])
                         parts[0] = "\"Last Name\""
                         output_file.write(",".join(parts))
                     else:
