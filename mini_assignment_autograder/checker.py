@@ -1,10 +1,12 @@
 import csv
 import io
+import traceback
 from abc import ABC, abstractmethod
 import subprocess
 import importlib
 import sys
 from contextlib import redirect_stdout
+import types
 
 def student_module_path(module, sid):
     return f"{sid}/{module}.py"
@@ -35,6 +37,11 @@ class Checker(ABC):
 
         unusable : (bool) true if importer and/or script checker threw error
 
+        These are about how many points to extract if each part of the grading script throws an error.
+        script_value : (int, default 3) default 3 because often we'll check both a script and a module
+        module_value : (int, default 3) default 3 because often we'll check both a script and a module
+        module_output_value (int, default 0) usually this will already arise when we check the module, so no need to penalise twice
+        examine_file_value (int, default 0) this is reading in the module as a text file, so there really shouldn't be any errors here
     """
 
     project: str
@@ -47,7 +54,11 @@ class Checker(ABC):
                  full_points_if_runs=False,
                  max_output_grade=1,
                  max_internal_grade=10,
-                 min_internal_grade=5
+                 min_internal_grade=5,
+                 script_value=3,
+                 module_value=3,
+                 module_output_value=0,
+                 examine_file_value=0
                  ):
         """
         :param sid: student id number
@@ -64,6 +75,10 @@ class Checker(ABC):
         self.min_output_grade = self.min_internal_grade * (self.max_output_grade / self.max_internal_grade)
         self.unusable = False
         self.parent_folder_name = submissions_folder_name
+        self.script_value=script_value
+        self.module_value=module_value
+        self.module_output_value=module_output_value
+        self.examine_file_value=examine_file_value
 
     def module_name(self, n=0):
         """
@@ -129,6 +144,13 @@ class Checker(ABC):
             except subprocess.CalledProcessError as e:
                 self.lower_score(10, f"importing {self.modules[i]} raised error: {e.output}")
 
+    def examine_module_files(self):
+        """
+        Read in the module files as text files to search for certain strings in the code.
+        Default: nothing
+        """
+        pass
+
     def add_comment(self, c):
         """
         makes a comment appropriate for the csv out of a string
@@ -140,7 +162,7 @@ class Checker(ABC):
         self.comments += f"{c}; "
 
     def lower_score(self, points, comment=None):
-        print_points = points * (self.max_output_grade / self.max_internal_grade)
+        print_points = '%2.1f' % (points * (self.max_output_grade / self.max_internal_grade))
         if comment is None:
             comment = ""
         if self.show_subtractions:
@@ -153,10 +175,26 @@ class Checker(ABC):
         """
         checks the homework, calling script_checker, module_output_checker, and module_checker
         """
-
-        self.script_checker()
-        self.module_output_checker()
-        self.module_checker()
+        try:
+            self.script_checker()
+        except Exception as e:
+            if self.script_value > 0:
+                self.lower_score(self.script_value, f"checking script failed with exception '{e}'")
+        try:
+            self.module_output_checker()
+        except Exception as e:
+            if self.module_output_value > 0:
+                self.lower_score(self.module_output_value, f"checkout output on import failed with exception '{e}'")
+        try:
+            self.module_checker()
+        except Exception as e:
+            if self.module_value > 0:
+                self.lower_score(self.module_value, f"checking module failed with exception '{e}'")
+        try:
+            self.examine_module_files()
+        except Exception as e:
+            if self.examine_file_value > 0:
+                self.lower_score(self.examine_file_value, f"examining python file failed with exception '{e}'")
 
         # adjust mark according to rules about minimum and maximum scores
         if self.grade < self.min_internal_grade:

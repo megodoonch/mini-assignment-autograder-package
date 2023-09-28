@@ -130,7 +130,7 @@ class SubmissionsChecker:
                     writer = csv.writer(f, dialect='unix')
                     writer.writerow([student_id, grade, comments])
             except Exception as err:
-                print("\n**FAILED**", err)
+                print("\t**FAILED**", err)
                 with open(self.csv, 'a') as f:
                     writer = csv.writer(f, dialect='unix')
                     writer.writerow([student_id, student_checker.min_output_grade, # if can't mark, they get min grade
