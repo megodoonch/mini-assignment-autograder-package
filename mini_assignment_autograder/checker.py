@@ -4,7 +4,7 @@ from abc import ABC, abstractmethod
 import subprocess
 import importlib
 import sys
-
+from contextlib import redirect_stdout
 
 def student_module_path(module, sid):
     return f"{sid}/{module}.py"
@@ -95,7 +95,7 @@ class Checker(ABC):
         pass
 
     def module_import_path(self, n=0):
-        return f'{self.parent_folder_name}.{self.sid}.{self.module_name(n)}'
+        return f'{self.sid}.{self.module_name(n)}'
 
     def module_checker(self):
         """
@@ -116,10 +116,11 @@ class Checker(ABC):
         for i in range(len(self.modules)):
             try:
                 output_capture = io.StringIO()
-                sys.stdout = output_capture
+                with redirect_stdout(output_capture):
+                    importlib.import_module(self.module_import_path(i))
                 output_string = output_capture.getvalue()
                 # put stout back to normal
-                sys.stdout = sys.__stdout__
+                # sys.stdout = sys.__stdout__
                 if len(output_string) > 0:
                     self.lower_score(
                         2,
