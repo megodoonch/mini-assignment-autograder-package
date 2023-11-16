@@ -21,7 +21,7 @@ from mini_assignment_autograder.all_submissions_checker import SubmissionsChecke
 import argparse
 
 # This is the parent directory where the output will be saved to. Update it for your system.
-local_marks_path = "results/digital_tools/2023/"
+local_marks_path = ""
 
 
 # get the command line arguments
