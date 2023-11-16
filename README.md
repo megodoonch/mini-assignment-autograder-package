@@ -14,6 +14,10 @@ To get started, install this repo as a Python package. A sample assignment is pr
 pip install path/to/mini-assignment-autograder-package/directory
 ```
 
+Copy the script `check_script.py` into the parent folder of your assignments.
+
+Create an assignment as a folder of your main homework folder. An example is provided: `favourite_number`.
+
 ## Running autograder
 
 Run the autograder from the command line by running `check_script.py`. Use `-h` for help.
